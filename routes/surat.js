@@ -37,7 +37,28 @@ router.get("/data", async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error inserting surat");
+    res.status(500).send("Error  surat");
+  }
+});
+
+router.get("/data/:id", async (req, res) => {
+  const file_url = req.params.id;
+
+  try {
+    await database.query(
+      "SELECT file_url FROM surat WHERE id = $1 ",
+      [file_url],
+      (err, result) => {
+        if (err) {
+          console.log("Error");
+        } else {
+          res.json({ message: "success", result });
+        }
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error  surat");
   }
 });
 
@@ -64,7 +85,7 @@ router.post("/post", upload.single("file"), async (req, res) => {
       "INSERT INTO surat (nama_surat, nama_bidang, tanggal, file_url) VALUES ($1, $2, $3, $4)",
       [nama_surat, nama_bidang, tanggal, fileUrl]
     );
-    res.json({ message: "surat berhasil di tambahkan", fileUrl });
+    res.json({ message: "surat berhasil di tambahkan" });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error inserting surat");
