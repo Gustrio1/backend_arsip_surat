@@ -4,14 +4,24 @@ const multer = require("multer");
 const path = require("path");
 const database = require("../db");
 const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
+require("dotenv").config();
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    const uniqeName = Date.now() + "-" + file.originalname;
-    cb(null, uniqeName);
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext).replace(/\s+/g, "_"); // hilangkan spasi
+    const uniqueName = `${Date.now()}_${name}${ext}`;
+    cb(null, uniqueName);
   },
 });
 
@@ -35,14 +45,26 @@ const upload = multer({ storage });
 
 router.post("/post", upload.single("file"), async (req, res) => {
   const { nama_surat, nama_bidang, tanggal } = req.body;
-  const file_path = req.file ? req.file.filename : null;
+  const localFilePath = req.file?.path;
 
   try {
+    let cloudinaryData = null;
+
+    if (localFilePath) {
+      cloudinaryData = await cloudinary.uploader.upload(localFilePath, {
+        resource_type: "auto",
+      });
+      // console.log(cloudinaryData);
+
+      fs.unlinkSync(localFilePath);
+    }
+    let fileUrl = cloudinaryData?.secure_url || null;
+
     await database.query(
       "INSERT INTO surat (nama_surat, nama_bidang, tanggal, file_url) VALUES ($1, $2, $3, $4)",
-      [nama_surat, nama_bidang, tanggal, file_path]
+      [nama_surat, nama_bidang, tanggal, fileUrl]
     );
-    res.json({ message: "surat berhasil di tambahkan" });
+    res.json({ message: "surat berhasil di tambahkan", fileUrl });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error inserting surat");
