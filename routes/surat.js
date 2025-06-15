@@ -46,7 +46,7 @@ router.get("/data/:id", async (req, res) => {
 
   try {
     await database.query(
-      "SELECT file_url FROM surat WHERE id = $1 ",
+      "SELECT  * FROM surat WHERE id = $1 ",
       [file_url],
       (err, result) => {
         if (err) {
