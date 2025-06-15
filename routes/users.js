@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const database = require("../db");
+require("dotenv").config();
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
