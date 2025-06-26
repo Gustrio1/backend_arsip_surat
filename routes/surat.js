@@ -65,7 +65,8 @@ router.get("/data/:id", async (req, res) => {
 const upload = multer({ storage });
 
 router.post("/post", upload.single("file"), async (req, res) => {
-  const { id, nama_surat, nama_bidang, tanggal, nama_instansi } = req.body;
+  const { no_surat, nama_surat, nama_bidang, tanggal, nama_instansi } =
+    req.body;
   const localFilePath = req.file?.path;
 
   try {
@@ -82,8 +83,8 @@ router.post("/post", upload.single("file"), async (req, res) => {
     let fileUrl = cloudinaryData?.secure_url || null;
 
     await database.query(
-      "INSERT INTO surat (id, nama_surat, nama_bidang, tanggal, file_url, nama_instansi) VALUES ($1, $2, $3, $4, $5, $6)",
-      [id, nama_surat, nama_bidang, tanggal, fileUrl, nama_instansi]
+      "INSERT INTO surat (No Surat, nama_surat, nama_bidang, tanggal, file_url, nama_instansi) VALUES ($1, $2, $3, $4, $5, $6)",
+      [no_surat, nama_surat, nama_bidang, tanggal, fileUrl, nama_instansi]
     );
     res.json({ message: "surat berhasil di tambahkan" });
   } catch (err) {
