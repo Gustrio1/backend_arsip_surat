@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
 
 router.get("/data", async (req, res) => {
   try {
-    await database.query(" SELECT * FROM surat", (err, result) => {
+    await database.query(" SELECT * FROM arsip", (err, result) => {
       if (err) {
         console.log("Error");
       } else {
@@ -46,7 +46,7 @@ router.get("/data/:id", async (req, res) => {
 
   try {
     await database.query(
-      "SELECT  * FROM surat WHERE id = $1 ",
+      "SELECT  * FROM arsip WHERE id = $1 ",
       [file_url],
       (err, result) => {
         if (err) {
@@ -65,7 +65,7 @@ router.get("/data/:id", async (req, res) => {
 const upload = multer({ storage });
 
 router.post("/post", upload.single("file"), async (req, res) => {
-  const { no_surat, nama_surat, nama_bidang, tanggal, nama_instansi } =
+  const { no_surat, nama_surat, nama_instansi, nama_bidang, tanggal } =
     req.body;
   const localFilePath = req.file?.path;
 
@@ -83,13 +83,13 @@ router.post("/post", upload.single("file"), async (req, res) => {
     let fileUrl = cloudinaryData?.secure_url || null;
 
     await database.query(
-      "INSERT INTO surat (No Surat, nama_surat, nama_bidang, tanggal, file_url, nama_instansi) VALUES ($1, $2, $3, $4, $5, $6)",
-      [no_surat, nama_surat, nama_bidang, tanggal, fileUrl, nama_instansi]
+      "INSERT INTO arsip (no_surat, nama_surat, nama_instansi, nama_bidang, tanggal, file_url) VALUES ($1, $2, $3, $4, $5, $6)",
+      [no_surat, nama_surat, nama_instansi, nama_bidang, tanggal, fileUrl]
     );
     res.json({ message: "surat berhasil di tambahkan" });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error inserting surat");
+    res.status(500).send("Error inserting surat", err);
   }
 });
 
@@ -163,7 +163,7 @@ router.delete("/delete/:id", async (req, res) => {
 
   try {
     const result = await database.query(
-      "SELECT file_url FROM surat WHERE id = $1",
+      "SELECT file_url FROM arsip WHERE id = $1",
       [suratId]
     );
 
@@ -182,7 +182,7 @@ router.delete("/delete/:id", async (req, res) => {
     }
 
     const deleteData = await database.query(
-      `DELETE FROM surat WHERE id = $1`,
+      `DELETE FROM arsip WHERE id = $1`,
       [suratId],
 
       (err, result) => {
